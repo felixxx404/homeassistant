@@ -7,10 +7,11 @@ Stand: 28.10.2026, gelesen über HA (ha-mcp) und die HA-Diagnosedaten der Hue-In
 - Home Assistant 2026.10.4 auf HA OS.
 - Installierte Apps: Matter Server, File editor, eufy-sdk bridge (gestoppt), Home Assistant MCP
   Server, Webhook Proxy, Zigbee2MQTT, Mosquitto, Tailscale. Keine Samba- und keine SSH-App.
-- App „Gartenhaus Lichtshow“ installiert: Slug `16db9f80_gartenhaus_lightshow`, Version 0.2.3,
+- App „Gartenhaus Lichtshow“ installiert: Slug `16db9f80_gartenhaus_lightshow`, Version 0.3.0,
   Repository `https://github.com/felixxx404/homeassistant` (öffentlich, Branch `main`).
   Watchdog **aus**, Start beim Booten **aus** (am 28.10.2026 von Claude umgestellt, weil der
-  Watchdog die nach dem Test beendete App ständig neu gestartet hat). App ist gestoppt.
+  Watchdog die nach dem Test beendete App ständig neu gestartet hat). App läuft seit
+  28.10.2026 23:07 (0.3.0), ohne Stream; keine Show gestartet.
 - MQTT-Integration „Mosquitto Mqtt Broker“ geladen, Discovery an (Präfix `homeassistant`).
 
 ## Gartenhaus-Bridge
@@ -67,18 +68,20 @@ werden nicht überschrieben.
 
 ## Phase 3, Stand 28.10.2026 (Version 0.3.0)
 
-- Neue Entitäten per MQTT-Discovery, sobald 0.3.0 läuft (Gerät „Gartenhaus Lichtshow“):
+- Neue Entitäten per MQTT-Discovery (Gerät „Gartenhaus Lichtshow“), in HA vorhanden und geprüft:
   `button.gartenhaus_lichtshow_starten`, `button.gartenhaus_lichtshow_stoppen`,
-  `button.gartenhaus_lichtshow_testlauf`, `number.gartenhaus_lichtshow_dauer`,
-  `sensor.gartenhaus_lichtshow_status`. Die IDs vergibt HA; nach dem Start prüfen.
+  `button.gartenhaus_lichtshow_testlauf`, `number.gartenhaus_lichtshow_dauer` (15),
+  `sensor.gartenhaus_lichtshow_status` (Bereit). Dazu die Supervisor-Entität
+  `update.gartenhaus_lichtshow_update`.
 - Show nur bei Bedarf, Dauer 1 bis 120 min (Vorgabe 15), danach automatisch Ende und Restore.
 - Effekt „Welle“ entlang Y (Waschbecken-Wand → hinten und zurück), Farbe kühles Blau.
-- Nur gegen Simulation geprüft (CLIP, DTLS, Supervisor, Mosquitto lokal).
+- An der echten Umgebung geprüft: Start der App, Kopplung vorhanden, Bereich gefunden,
+  MQTT-Anmeldung und Entitäten. Show, Testlauf-Button und Stopp nur gegen Simulation geprüft.
 
 ## Offene Punkte
 
-- Phase 3: Version 0.3.0 auf HA aktualisieren, starten und Show an der echten Bridge prüfen
-  (Entitäten, Snapshot-Farben im Stream, Helligkeit beim Streamstart, Welle, Stopp).
+- Show an der echten Bridge prüfen: Snapshot-Farben und Helligkeit beim Streamstart (springen
+  die Lampen?), Welle, Stopp-Button, automatisches Ende, Restore inkl. Kerzen-Effekt.
 - Alte Commits mit Bridge-ID, MAC und IP waren kurz öffentlich und sind über ihre Commit-ID
   ggf. noch abrufbar, bis GitHub sie entfernt.
 - Offizielle Hue-Doku (Frequenzen, Koordinatengrenzen) nicht geprüft, Seite war nicht erreichbar.
