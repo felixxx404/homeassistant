@@ -1,0 +1,15 @@
+configuration:
+  bridge_host:
+    name: Bridge address
+    description: >-
+      Fixed IPv4 address of the garden house bridge.
+  bridge_id:
+    name: Bridge ID
+    description: >-
+      16-character ID of the garden house bridge (Hue app, settings, bridges). On start
+      the app checks that exactly this bridge answers at the bridge address.
+  testlauf:
+    name: Test run on start
+    description: >-
+      Light each lamp briefly in blue, one after another, then restore the previous
+      state. When off, the app only checks pairing and the entertainment area.

@@ -1,0 +1,72 @@
+# Lampen-Mapping Gartenhaus (einzige Quelle fuer Lampen und Positionen)
+#
+# Zuordnung ueber light_id (Hue light resource id). "kanal" ist der Stand bei der
+# Erfassung im Bereich "Gartenhaus (SYNC HA)" am 28.10.2026; der Dienst liest den
+# aktuellen Kanal beim Start aus der Bridge und richtet sich nach der light_id.
+#
+# position_m: Mitte der Lampe in Metern laut Grundriss von Felix.
+#   Ursprung oben links, X nach rechts, Y nach unten, Z vom Boden nach oben.
+# position_hue: daraus berechnet (x = X/2 - 1, y = 1 - Y/3, z = Z/1,6 - 1).
+#   Der Dienst prueft beim Laden, dass beide Angaben zusammenpassen.
+#   Die Werte werden NICHT auf die Bridge geschrieben.
+#
+# Bridge-Adresse und Bridge-ID stehen nicht hier, sondern in den App-Optionen in HA.
+#
+# Nicht im Stream: light.gartenhaus_laser (Hue Smart Plug, kein Entertainment-Dienst).
+
+raum:
+  breite_m: 4.0
+  tiefe_m: 6.0
+  hoehe_m: 3.2
+
+entertainment_bereich: "Gartenhaus (SYNC HA)"
+
+lampen:
+  - name: "6G Waschbeckenlampe"
+    light_id: "ff8ff4cb-4c72-4916-964c-30e035bee0cb"
+    ha_entity: "light.gartenhaus_6g_waschbeckenlampe"
+    kanal: 5
+    position_m: {x: 0.40, y: 0.00, z: 2.10}
+    position_hue: {x: -0.8, y: 1.0, z: 0.3125}
+
+  - name: "4G Schrankbeleuchtung"
+    light_id: "040d1d3f-ec05-4c5b-b791-17738fa376ca"
+    ha_entity: "light.gartenhaus_4g_schrankbeleuchtung"
+    kanal: 3
+    position_m: {x: 3.00, y: 0.10, z: 0.80}
+    position_hue: {x: 0.5, y: 0.9667, z: -0.5}
+
+  - name: "5G Wandlampe"
+    light_id: "7d116f0f-a4db-46f1-9ac8-56ec8d74e876"
+    ha_entity: "light.gartenhaus_5g_wandlampe"
+    kanal: 4
+    position_m: {x: 4.00, y: 1.50, z: 2.55}
+    position_hue: {x: 1.0, y: 0.5, z: 0.5937}
+
+  - name: "3G Deckenleuchte rechts"
+    light_id: "cbd921f1-772b-4291-aede-fd7e02fd3719"
+    ha_entity: "light.gartenhaus_3g_deckenleuchte"
+    kanal: 2
+    position_m: {x: 1.35, y: 2.20, z: 3.20}
+    position_hue: {x: -0.325, y: 0.2667, z: 1.0}
+
+  - name: "1G Deckenleuchte links"
+    light_id: "2820a787-833a-4f1f-8717-1c949e8e9a0e"
+    ha_entity: "light.gartenhaus_1g_deckenleuchte"
+    kanal: 0
+    position_m: {x: 1.35, y: 3.80, z: 3.20}
+    position_hue: {x: -0.325, y: -0.2667, z: 1.0}
+
+  - name: "2G Wandlampe"
+    light_id: "2dd7a69c-e7ef-434c-b09f-d9e2c106e2b0"
+    ha_entity: "light.gartenhaus_2g_wandlampe"
+    kanal: 1
+    position_m: {x: 4.00, y: 4.50, z: 2.55}
+    position_hue: {x: 1.0, y: -0.5, z: 0.5937}
+
+  - name: "7G Tischlampe"
+    light_id: "83c16192-7e44-4a2b-a8d3-7c4a865ac0e1"
+    ha_entity: "light.gartenhaus_7g_tischlampe"
+    kanal: 6
+    position_m: {x: 0.30, y: 4.00, z: 0.60}
+    position_hue: {x: -0.85, y: -0.3333, z: -0.625}

@@ -1,0 +1,15 @@
+configuration:
+  bridge_host:
+    name: Bridge-Adresse
+    description: >-
+      Feste IPv4-Adresse der Gartenhaus-Bridge.
+  bridge_id:
+    name: Bridge-ID
+    description: >-
+      16-stellige ID der Gartenhaus-Bridge (Hue-App, Einstellungen, Bridges). Die App
+      prueft beim Start, dass unter der Bridge-Adresse genau diese Bridge antwortet.
+  testlauf:
+    name: Testlauf beim Start
+    description: >-
+      Jede Lampe nacheinander kurz blau aufleuchten lassen und danach den vorherigen
+      Zustand wiederherstellen. Ausgeschaltet prueft die App nur Kopplung und Bereich.

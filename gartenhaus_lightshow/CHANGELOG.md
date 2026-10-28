@@ -1,0 +1,15 @@
+# Changelog
+
+## 0.2.2
+
+- Bridge-Adresse und Bridge-ID nur noch als App-Optionen (nicht mehr im Repo).
+
+## 0.2.1
+
+- Feste Bridge-Adresse als App-Option, mDNS-Suche entfernt.
+- App läuft ohne `host_network` (nur ausgehend HTTPS 443 und UDP 2100 zur Bridge).
+
+## 0.2.0
+
+- Erste Version: Kopplung mit Client-Key, Prüfung des Bereichs „Gartenhaus (SYNC HA)“,
+  DTLS-Stream mit 50 Hz, Testlauf mit Snapshot & Restore, Blitzbegrenzung (3 pro Sekunde).
