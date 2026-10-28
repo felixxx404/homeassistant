@@ -7,10 +7,11 @@ Stand: 28.10.2026, gelesen über HA (ha-mcp) und die HA-Diagnosedaten der Hue-In
 - Home Assistant 2026.10.4 auf HA OS.
 - Installierte Apps: Matter Server, File editor, eufy-sdk bridge (gestoppt), Home Assistant MCP
   Server, Webhook Proxy, Zigbee2MQTT, Mosquitto, Tailscale. Keine Samba- und keine SSH-App.
-- App „Gartenhaus Lichtshow“ installiert: Slug `16db9f80_gartenhaus_lightshow`, Version 0.2.2,
+- App „Gartenhaus Lichtshow“ installiert: Slug `16db9f80_gartenhaus_lightshow`, Version 0.2.3,
   Repository `https://github.com/felixxx404/homeassistant` (öffentlich, Branch `main`).
   Watchdog **aus**, Start beim Booten **aus** (am 28.10.2026 von Claude umgestellt, weil der
-  Watchdog die nach dem Test beendete App ständig neu gestartet hat). Update auf 0.2.3 steht aus.
+  Watchdog die nach dem Test beendete App ständig neu gestartet hat). App ist gestoppt.
+- MQTT-Integration „Mosquitto Mqtt Broker“ geladen, Discovery an (Präfix `homeassistant`).
 
 ## Gartenhaus-Bridge
 
@@ -64,9 +65,20 @@ werden nicht überschrieben.
   Effekte wie „candle“ (4G, 7G) lassen sich im Stream nicht abbilden; dort wird die Grundfarbe
   des Effekts gesendet.
 
+## Phase 3, Stand 28.10.2026 (Version 0.3.0)
+
+- Neue Entitäten per MQTT-Discovery, sobald 0.3.0 läuft (Gerät „Gartenhaus Lichtshow“):
+  `button.gartenhaus_lichtshow_starten`, `button.gartenhaus_lichtshow_stoppen`,
+  `button.gartenhaus_lichtshow_testlauf`, `number.gartenhaus_lichtshow_dauer`,
+  `sensor.gartenhaus_lichtshow_status`. Die IDs vergibt HA; nach dem Start prüfen.
+- Show nur bei Bedarf, Dauer 1 bis 120 min (Vorgabe 15), danach automatisch Ende und Restore.
+- Effekt „Welle“ entlang Y (Waschbecken-Wand → hinten und zurück), Farbe kühles Blau.
+- Nur gegen Simulation geprüft (CLIP, DTLS, Supervisor, Mosquitto lokal).
+
 ## Offene Punkte
 
-- App in HA auf 0.2.3 aktualisieren (App-Store neu laden, dann Update).
+- Phase 3: Version 0.3.0 auf HA aktualisieren, starten und Show an der echten Bridge prüfen
+  (Entitäten, Snapshot-Farben im Stream, Helligkeit beim Streamstart, Welle, Stopp).
 - Alte Commits mit Bridge-ID, MAC und IP waren kurz öffentlich und sind über ihre Commit-ID
   ggf. noch abrufbar, bis GitHub sie entfernt.
 - Offizielle Hue-Doku (Frequenzen, Koordinatengrenzen) nicht geprüft, Seite war nicht erreichbar.

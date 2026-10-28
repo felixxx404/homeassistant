@@ -1,8 +1,8 @@
-"""Testmuster: jede Lampe nacheinander kurz in einer Farbe, alle anderen aus."""
+"""Testmuster: jede Lampe nacheinander kurz in einer Farbe, alle anderen in ihrer Grundfarbe."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .safety import RGB
 
@@ -28,10 +28,11 @@ class TestPattern:
     steps: tuple[Step, ...]
     duration_s: float
     color: RGB = TEST_COLOR
+    base: dict[int, RGB] = field(default_factory=dict)
 
     def frame(self, t: float) -> dict[int, RGB]:
         """Farben aller Kanaele zum Zeitpunkt t (Sekunden seit Streamstart)."""
-        frame = {channel: BLACK for channel in self.channels}
+        frame = {channel: self.base.get(channel, BLACK) for channel in self.channels}
         for step in self.steps:
             if step.start_s <= t < step.end_s:
                 frame[step.channel_id] = self.color
@@ -46,6 +47,7 @@ def build_test_pattern(
     gap_s: float = GAP_S,
     lead_out_s: float = LEAD_OUT_S,
     color: RGB = TEST_COLOR,
+    base: dict[int, RGB] | None = None,
 ) -> TestPattern:
     """Ablauf fuer die Kanaele in der gegebenen Reihenfolge erzeugen."""
     if not channel_order:
@@ -65,4 +67,5 @@ def build_test_pattern(
         steps=tuple(steps),
         duration_s=duration,
         color=color,
+        base=dict(base or {}),
     )

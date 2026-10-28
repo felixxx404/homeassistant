@@ -1,7 +1,7 @@
 name: Gartenhaus Lichtshow
-version: "0.2.3"
+version: "0.3.0"
 slug: gartenhaus_lightshow
-description: Hue-Entertainment-Dienst fuer das Gartenhaus (Phase 2, Testlauf)
+description: Hue-Entertainment-Lichtshow fuer das Gartenhaus, Steuerung aus Home Assistant
 url: https://github.com/felixxx404/homeassistant
 arch:
   - aarch64
@@ -9,14 +9,15 @@ arch:
 startup: application
 boot: manual
 init: true
+# MQTT-Zugangsdaten der Mosquitto-App fuer die Entitaeten in Home Assistant.
+services:
+  - mqtt:need
 # Zeit fuer sauberes Stream-Ende und Wiederherstellen der Lampen beim Stoppen.
 timeout: 60
 # Bridge-Adresse und Bridge-ID traegt Felix in den App-Optionen ein (nicht im Repo).
 options:
   bridge_host: ""
   bridge_id: ""
-  testlauf: true
 schema:
   bridge_host: str
   bridge_id: str
-  testlauf: bool

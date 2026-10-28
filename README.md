@@ -5,9 +5,10 @@
 Eigene HA-OS-App, die per Hue Entertainment API (DTLS 1.2 PSK, UDP 2100) die 7 Lampen im
 Bereich „Gartenhaus (SYNC HA)“ der Gartenhaus-Bridge ansteuert.
 
-**Stand: Phase 2.** Dienst und Testlauf sind gebaut und gegen eine simulierte Bridge geprüft.
-Ein Test an der echten Bridge steht aus. Auto-DJ, Spotify, Effekte, MQTT und Dashboard
-folgen erst in späteren Phasen.
+**Stand: Phase 3 (Grundlage).** Steuerung aus HA per MQTT (Starten, Stoppen, Testlauf, Dauer,
+Status), Stream nur bei Bedarf, Effekt „Welle“, unbeteiligte Lampen in Snapshot-Farbe.
+Der Testlauf aus Phase 2 lief an der echten Bridge; die Show aus Phase 3 ist bisher nur gegen
+eine simulierte Bridge geprüft. Auto-DJ, Spotify, weitere Effekte und Dashboard folgen später.
 
 ### Struktur
 
@@ -24,7 +25,10 @@ folgen erst in späteren Phasen.
 ### Technische Eckpunkte
 
 - Bibliothek `hue-entertainment` 0.1.2 (Music Assistant) für DTLS und HueStream v2.
-  Farben mit 8 Bit je Kanal (RGB); für die Testmuster ausreichend.
+  Farben mit 8 Bit je Kanal (RGB). Snapshot-Farben werden aus xy bzw. Farbtemperatur und
+  Helligkeit umgerechnet; ob sie an der echten Bridge genauso aussehen, ist **ungeprüft**.
+- Steuerung per MQTT-Discovery über die Mosquitto-App (Zugangsdaten vom Supervisor,
+  `services: mqtt:need`), Entitäten siehe `gartenhaus_lightshow/DOCS.md`.
 - CLIP v2 (`action: start/stop`, Lampen lesen und setzen) über einen eigenen kleinen Client.
 - Senderate 50 Hz. Laut Drittquellen gibt die Bridge höchstens ~25 Hz an die Lampen weiter;
   die offizielle Hue-Doku war nicht erreichbar, beides ist **nicht offiziell bestätigt**.
@@ -52,5 +56,13 @@ pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-Die Tests in `tests/test_simulation.py` und `tests/sim/container_probelauf.sh` laufen gegen eine
-**simulierte** Bridge und sind kein Nachweis für die echte Hardware.
+Für die MQTT-Tests muss `mosquitto` installiert sein, sonst werden sie übersprungen.
+Probelauf des App-Images (Docker nötig):
+
+```bash
+python tests/sim/container_probelauf.py <image>
+```
+
+Die Tests in `tests/test_simulation.py`, `tests/test_mqtt_simulation.py` und der Probelauf
+laufen gegen eine **simulierte** Bridge (und einen simulierten Supervisor) und sind kein
+Nachweis für die echte Hardware.

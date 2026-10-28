@@ -88,6 +88,9 @@ class EntertainmentStream:
                 await handshake
             await self._shutdown()
             raise
+        except (TimeoutError, OSError, ValueError) as err:
+            await self._shutdown()
+            raise StreamLost(f"DTLS-Handshake fehlgeschlagen: {type(err).__name__}: {err}") from err
         except BaseException:
             await self._shutdown()
             raise

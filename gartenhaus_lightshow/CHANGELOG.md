@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- Steuerung aus Home Assistant per MQTT-Discovery: Buttons Starten, Stoppen, Testlauf,
+  Zahl Dauer (1 bis 120 min), Sensor Status. Benötigt die Mosquitto-App (`mqtt:need`).
+- Stream nur bei Bedarf: Show startet per Button und endet nach der eingestellten Dauer.
+- Erster Effekt „Welle“ auf Basis der Raumkoordinaten aus `mapping.yaml`.
+- Unbeteiligte Lampen zeigen im Stream ihre Snapshot-Farbe statt dunkel zu werden
+  (auch im Testlauf).
+- Option `testlauf` entfällt, dafür gibt es den Button „Testlauf“.
+- Fehler behoben: Schlug der DTLS-Handshake mit Timeout fehl, blieb der Status hängen.
+
 ## 0.2.3
 
 - Die App beendet sich nach dem Testlauf nicht mehr, sondern bleibt ohne Stream aktiv,

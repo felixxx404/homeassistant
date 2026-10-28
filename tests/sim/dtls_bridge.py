@@ -64,7 +64,7 @@ def parse_huestream(payload: bytes, received: float) -> HueStreamFrame:
 
 
 class SimulatedDtlsBridge:
-    """SIMULATION: nimmt genau eine DTLS-Sitzung an und sammelt HueStream-Frames."""
+    """SIMULATION: nimmt DTLS-Sitzungen nacheinander an und sammelt HueStream-Frames."""
 
     def __init__(self, identity: str, psk_hex: str, host: str = "127.0.0.1", port: int = 2100):
         self.identity = identity.encode()
@@ -89,7 +89,7 @@ class SimulatedDtlsBridge:
     # -- Server-Ablauf --
 
     def _serve(self) -> None:
-        peer = None
+        peer: tuple[str, int] | None = None
         cookie = os.urandom(20)
         transcript = bytearray()
         client_random = server_random = b""
@@ -103,9 +103,18 @@ class SimulatedDtlsBridge:
                 continue
             except OSError:
                 return
-            if peer is None:
-                peer = addr
             for ctype, epoch, seq, fragment in _records(data):
+                if (
+                    ctype == CT_HANDSHAKE
+                    and epoch == 0
+                    and fragment[:1] == bytes([HT_CLIENT_HELLO])
+                    and state not in ("hello1", "hello2")
+                ):
+                    # Neue Sitzung (naechster Stream): wie die echte Bridge neu beginnen.
+                    state, out_seq, transcript, keys = "hello1", 0, bytearray(), {}
+                    cookie = os.urandom(20)
+                if state == "hello1":
+                    peer = addr
                 try:
                     if state in ("hello1", "hello2") and ctype == CT_HANDSHAKE and epoch == 0:
                         msg_type, body, full = _handshake(fragment)

@@ -1,4 +1,4 @@
-"""Einstiegspunkt der App: Optionen lesen, Dienst ausfuehren."""
+"""Einstiegspunkt der App: Optionen lesen, Bridge vorbereiten, Befehle aus HA per MQTT."""
 
 from __future__ import annotations
 
@@ -9,14 +9,16 @@ import logging
 import re
 import signal
 import sys
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 
 from .area import AreaError
 from .bridge import BridgeError
+from .controller import Settings, ShowController
 from .credentials import CredentialError
+from .ha_mqtt import HaMqttBridge, MqttSettings, MqttUnavailable, mqtt_settings_from_supervisor
 from .mapping import MappingError
-from .service import ServiceConfig, ServiceError, run
+from .service import STATUS_ERROR, LightshowService, ServiceConfig, ServiceError
 from .snapshot import SnapshotError
 from .stream import StreamLost
 
@@ -81,25 +83,59 @@ def _build_config() -> ServiceConfig:
         clip_base_url=f"https://{host}",
         dtls_host=host,
         bridge_id=bridge_id,
-        run_test=bool(options.get("testlauf", False)),
     )
 
 
-async def run_once_then_idle(build_config: Callable[[], ServiceConfig]) -> None:
-    """Einmal ausfuehren, danach ohne Stream warten, bis die App gestoppt wird.
+async def run_app(
+    build_config: Callable[[], ServiceConfig],
+    get_mqtt_settings: Callable[[], Awaitable[MqttSettings]],
+) -> None:
+    """Dauerhaft laufen: Bridge vorbereiten, Entitaeten anmelden, auf Befehle warten.
 
-    Die App beendet sich nicht von selbst: Ein Supervisor-Watchdog wuerde sie sonst
-    sofort neu starten und den Testlauf endlos wiederholen.
+    Die App beendet sich nie von selbst (sonst wuerde ein Supervisor-Watchdog sie neu
+    starten). Der Stream laeuft nur waehrend einer Show oder eines Testlaufs.
     """
     try:
-        await run(build_config())
-        LOGGER.info("Fertig. Die App bleibt ohne Stream aktiv, bis sie gestoppt wird.")
+        config = build_config()
     except KNOWN_ERRORS as err:
         LOGGER.error("%s: %s", type(err).__name__, err)
-        LOGGER.info(
-            "Kein weiterer Versuch. Die App bleibt ohne Stream aktiv, bis sie gestoppt wird."
-        )
-    await asyncio.Event().wait()
+        LOGGER.info("App-Optionen pruefen und die App neu starten. Bis dahin passiert nichts.")
+        await asyncio.Event().wait()
+        return
+
+    controller: ShowController | None = None
+
+    async def on_status(status: str, attributes: dict[str, object]) -> None:
+        if controller is not None:
+            await controller.set_status(status, attributes)
+
+    service = LightshowService(config, on_status=on_status)
+    try:
+        mqtt = HaMqttBridge(await get_mqtt_settings())
+    except MqttUnavailable as err:
+        LOGGER.error("MQTT nicht verfuegbar: %s. Ohne MQTT keine Steuerung aus HA.", err)
+        mqtt = None
+    publish = mqtt.publish_status if mqtt is not None else _ignore_status
+    controller = ShowController(service, Settings(config.data_dir / "settings.json"), publish)
+    try:
+        try:
+            await service.prepare()
+        except KNOWN_ERRORS as err:
+            LOGGER.error("Vorbereitung fehlgeschlagen: %s: %s", type(err).__name__, err)
+            LOGGER.info("Ein Start aus HA versucht die Vorbereitung erneut.")
+            await controller.set_status(STATUS_ERROR, {"fehler": f"{type(err).__name__}: {err}"})
+        if mqtt is None:
+            await asyncio.Event().wait()
+        else:
+            mqtt.attach(controller)
+            await mqtt.run_forever()
+    finally:
+        await controller.stop()
+        await service.close()
+
+
+async def _ignore_status(status: str, attributes: dict[str, object]) -> None:
+    return None
 
 
 async def _main() -> None:
@@ -108,7 +144,7 @@ async def _main() -> None:
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, task.cancel)
-    await run_once_then_idle(_build_config)
+    await run_app(_build_config, mqtt_settings_from_supervisor)
 
 
 def main() -> int:

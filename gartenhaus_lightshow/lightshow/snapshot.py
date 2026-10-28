@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import Any
 
 from .bridge import BridgeClient, BridgeError
+from .color import BLACK, base_rgb_from_light
+from .safety import RGB
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +35,8 @@ class LightSnapshot:
     light_id: str
     name: str
     restore_body: dict[str, Any]
+    # Farbe der Lampe vor dem Stream; damit bleiben unbeteiligte Lampen im Stream unveraendert.
+    base_rgb: RGB = BLACK
 
 
 def restore_body_from_light(light: dict[str, Any]) -> dict[str, Any]:
@@ -98,7 +102,11 @@ async def capture(client: BridgeClient, lamps: list[tuple[str, str]]) -> list[Li
     snapshots: list[LightSnapshot] = []
     for light_id, name in lamps:
         light = await client.get_light(light_id)
-        snapshots.append(LightSnapshot(light_id, name, restore_body_from_light(light)))
+        snapshots.append(
+            LightSnapshot(
+                light_id, name, restore_body_from_light(light), base_rgb_from_light(light)
+            )
+        )
     return snapshots
 
 
@@ -150,7 +158,10 @@ class SnapshotStore:
             return None
         try:
             payload = json.loads(self._path.read_text(encoding="utf-8"))
-            snapshots = [LightSnapshot(**entry) for entry in payload["lights"]]
+            snapshots = [
+                LightSnapshot(**{**entry, "base_rgb": tuple(entry.get("base_rgb", BLACK))})
+                for entry in payload["lights"]
+            ]
             return float(payload["created"]), snapshots
         except (OSError, ValueError, KeyError, TypeError) as err:
             raise SnapshotError(f"Snapshot-Datei {self._path} ist beschaedigt: {err}") from err
