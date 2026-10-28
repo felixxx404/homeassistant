@@ -9,6 +9,7 @@ import logging
 import re
 import signal
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 from .area import AreaError
@@ -58,18 +59,23 @@ def _read_options() -> dict[str, object]:
     return options
 
 
-async def _main() -> None:
-    task = asyncio.current_task()
-    assert task is not None
-    loop = asyncio.get_running_loop()
-    for sig in (signal.SIGTERM, signal.SIGINT):
-        loop.add_signal_handler(sig, task.cancel)
+KNOWN_ERRORS = (
+    AreaError,
+    BridgeError,
+    CredentialError,
+    MappingError,
+    ServiceError,
+    SnapshotError,
+    StreamLost,
+)
 
+
+def _build_config() -> ServiceConfig:
     options = _read_options()
     host = bridge_host_from_options(options)
     bridge_id = bridge_id_from_options(options)
     LOGGER.info("Bridge-Adresse: %s", host)
-    config = ServiceConfig(
+    return ServiceConfig(
         mapping_path=MAPPING_PATH,
         data_dir=DATA_DIR,
         clip_base_url=f"https://{host}",
@@ -77,7 +83,32 @@ async def _main() -> None:
         bridge_id=bridge_id,
         run_test=bool(options.get("testlauf", False)),
     )
-    await run(config)
+
+
+async def run_once_then_idle(build_config: Callable[[], ServiceConfig]) -> None:
+    """Einmal ausfuehren, danach ohne Stream warten, bis die App gestoppt wird.
+
+    Die App beendet sich nicht von selbst: Ein Supervisor-Watchdog wuerde sie sonst
+    sofort neu starten und den Testlauf endlos wiederholen.
+    """
+    try:
+        await run(build_config())
+        LOGGER.info("Fertig. Die App bleibt ohne Stream aktiv, bis sie gestoppt wird.")
+    except KNOWN_ERRORS as err:
+        LOGGER.error("%s: %s", type(err).__name__, err)
+        LOGGER.info(
+            "Kein weiterer Versuch. Die App bleibt ohne Stream aktiv, bis sie gestoppt wird."
+        )
+    await asyncio.Event().wait()
+
+
+async def _main() -> None:
+    task = asyncio.current_task()
+    assert task is not None
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(sig, task.cancel)
+    await run_once_then_idle(_build_config)
 
 
 def main() -> int:
@@ -90,18 +121,6 @@ def main() -> int:
         asyncio.run(_main())
     except asyncio.CancelledError:
         LOGGER.info("Dienst gestoppt.")
-        return 0
-    except (
-        AreaError,
-        BridgeError,
-        CredentialError,
-        MappingError,
-        ServiceError,
-        SnapshotError,
-        StreamLost,
-    ) as err:
-        LOGGER.error("%s: %s", type(err).__name__, err)
-        return 1
     return 0
 
 

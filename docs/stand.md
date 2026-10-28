@@ -7,7 +7,10 @@ Stand: 28.10.2026, gelesen über HA (ha-mcp) und die HA-Diagnosedaten der Hue-In
 - Home Assistant 2026.10.4 auf HA OS.
 - Installierte Apps: Matter Server, File editor, eufy-sdk bridge (gestoppt), Home Assistant MCP
   Server, Webhook Proxy, Zigbee2MQTT, Mosquitto, Tailscale. Keine Samba- und keine SSH-App.
-- Die App „Gartenhaus Lichtshow“ ist **noch nicht installiert**.
+- App „Gartenhaus Lichtshow“ installiert: Slug `16db9f80_gartenhaus_lightshow`, Version 0.2.2,
+  Repository `https://github.com/felixxx404/homeassistant` (öffentlich, Branch `main`).
+  Watchdog **aus**, Start beim Booten **aus** (am 28.10.2026 von Claude umgestellt, weil der
+  Watchdog die nach dem Test beendete App ständig neu gestartet hat). Update auf 0.2.3 steht aus.
 
 ## Gartenhaus-Bridge
 
@@ -39,10 +42,18 @@ Die Positionen auf der Bridge (in der Hue-App gesetzt) weichen von den gemessene
 bei Z teils deutlich. Maßgeblich ist `gartenhaus_lightshow/mapping.yaml`; die Bridge-Werte
 werden nicht überschrieben.
 
-## Nach dem ersten Start der App zu erwarten
+## Testlauf an der echten Bridge (28.10.2026, ca. 22:40)
 
-- In der Hue-App erscheint eine neue verbundene App `gartenhaus_lightshow#ha_app`.
-- Die Zugangsdaten liegen nur im `/data`-Verzeichnis der App.
+- Kopplung per Link-Button erfolgreich; in der Hue-App gibt es jetzt die verbundene App
+  `gartenhaus_lightshow#ha_app`. Zugangsdaten nur im `/data`-Verzeichnis der App.
+- DTLS-Handshake erfolgreich. Die Bridge beantwortet das erste Cookie-ClientHello nicht;
+  nach einer Wiederholung (rund 5 s) steht die Verbindung. Vermutlich wegen `message_seq` 0
+  in hue-entertainment 0.1.2; funktioniert, kostet aber Zeit beim Streamstart.
+- 772 bis 775 Frames je Lauf (50 Hz), alle 7 Lampen leuchteten nacheinander blau.
+- Nach jedem Lauf wurden alle 7 Lampen wiederhergestellt, inklusive Kerzen-Effekt an 4G/7G.
+- Fehler: Mit eingeschaltetem Watchdog startete der Supervisor die App nach jedem Lauf neu,
+  der Test lief dadurch in Schleife. App gestoppt, Watchdog aus; ab 0.2.3 bleibt die App nach
+  dem Lauf ohne Stream aktiv und beendet sich nicht mehr selbst.
 
 ## Entscheidungen für Phase 3 (Stand 28.10.2026)
 
@@ -55,7 +66,8 @@ werden nicht überschrieben.
 
 ## Offene Punkte
 
-- Repository öffentlich schalten (GitHub-Einstellungen, macht Felix); Branch `main` ist angelegt.
-- Testlauf an der echten Bridge mit Felix steht aus.
+- App in HA auf 0.2.3 aktualisieren (App-Store neu laden, dann Update).
+- Alte Commits mit Bridge-ID, MAC und IP waren kurz öffentlich und sind über ihre Commit-ID
+  ggf. noch abrufbar, bis GitHub sie entfernt.
 - Offizielle Hue-Doku (Frequenzen, Koordinatengrenzen) nicht geprüft, Seite war nicht erreichbar.
 - Verhalten ausgeschalteter Lampen nach dem Stream an der echten Bridge prüfen (siehe README).

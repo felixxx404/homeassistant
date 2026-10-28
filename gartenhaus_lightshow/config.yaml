@@ -1,5 +1,5 @@
 name: Gartenhaus Lichtshow
-version: "0.2.2"
+version: "0.2.3"
 slug: gartenhaus_lightshow
 description: Hue-Entertainment-Dienst fuer das Gartenhaus (Phase 2, Testlauf)
 url: https://github.com/felixxx404/homeassistant

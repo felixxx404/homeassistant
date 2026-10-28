@@ -17,7 +17,9 @@ Musik-Steuerung und Home-Assistant-Entitäten gibt es in dieser Phase nicht.
 4. Testlauf (Option `testlauf`): Snapshot aller 7 Lampen, Stream starten, jede Lampe
    nacheinander 1,5 s blau, dazwischen 0,5 s Pause, alle anderen aus. Danach Stream stoppen
    und den Ursprungszustand wiederherstellen. Dauer etwa 16 Sekunden.
-5. Danach beendet sich die App.
+5. Danach bleibt die App ohne Stream aktiv, bis du sie stoppst. Sie startet den Testlauf
+   nur einmal pro Start, auch nach einem Fehler gibt es keinen automatischen Neuversuch.
+   Watchdog und „Beim Start ausführen“ sollten aus bleiben.
 
 ## Optionen
 

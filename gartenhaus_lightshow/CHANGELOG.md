@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+- Die App beendet sich nach dem Testlauf nicht mehr, sondern bleibt ohne Stream aktiv,
+  bis sie gestoppt wird. Vorher hat der Supervisor-Watchdog sie neu gestartet und den
+  Testlauf endlos wiederholt. Auch nach Fehlern gibt es keinen automatischen Neuversuch.
+
 ## 0.2.2
 
 - Bridge-Adresse und Bridge-ID nur noch als App-Optionen (nicht mehr im Repo).
