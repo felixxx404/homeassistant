@@ -440,6 +440,7 @@ Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler,
 | F-11 | Dyson: Verbindung „Cloud mit lokalem Fallback“ (lokal war aus dem IoT-VLAN nie erreichbar) | kein 10-s-Timeout beim Start; Werte kommen |
 | F-05 | Drucker behalten. Neue Sensoren `sensor.drucker_toner_{schwarz,cyan,magenta,gelb}` (letzter bekannter Wert) und `sensor.drucker_status` („Aus“ statt „nicht verfügbar“); Dashboard-Kachel umgestellt | siehe Hinweis unten |
 | F-02 | Wecker-Ersatzansage: Google-Übersetzer-TTS statt Nabu-Casa-Cloud | läuft ohne Abo |
+| U-04 / F-14 | ApexCharts gestaffelt: 7–8 Tage → 30 min, 30–31 Tage → 1 h, 365 Tage → 6 h; 24-h-Diagramme unverändert (5 min bzw. 1 min) | 36 von 50 Diagrammen fragen seltener ab; Optik unverändert |
 
 ### Bewusst so gelassen / Hinweise
 
@@ -471,7 +472,7 @@ Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler,
 |---|---|---|
 | 2 | Recorder-Block (Anhang B), `ip_ban` (F-12), gedrosselte WAN-Sensoren (Anhang C), Zähler umstellen, Purge + Repack | YAML-Zugriff |
 | 5 | Pakete (`packages/`), Regenvorschau modernisieren, Verleih bündeln, Labels | YAML-Zugriff |
-| 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen, ApexCharts-Intervalle staffeln (F-14, Pop-ups bleiben) | Dateizugriff |
+| 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen (F-14, Pop-ups bleiben) | Dateizugriff |
 
 **Damit es weitergeht – zwei Schritte in der HA-Oberfläche:**
 
