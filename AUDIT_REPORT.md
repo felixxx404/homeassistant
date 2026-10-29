@@ -440,6 +440,8 @@ Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler,
 | F-11 | Dyson: Verbindung „Cloud mit lokalem Fallback“ (lokal war aus dem IoT-VLAN nie erreichbar) | kein 10-s-Timeout beim Start; Werte kommen |
 | F-05 | Drucker behalten. Neue Sensoren `sensor.drucker_toner_{schwarz,cyan,magenta,gelb}` (letzter bekannter Wert) und `sensor.drucker_status` („Aus“ statt „nicht verfügbar“); Dashboard-Kachel umgestellt | siehe Hinweis unten |
 | F-02 | Wecker-Ersatzansage: Google-Übersetzer-TTS statt Nabu-Casa-Cloud | läuft ohne Abo |
+| R-02 (Teil, ohne YAML) | Gedrosselte Kopien als UI-Filter-Helfer (`time_throttle`, 5 min): `sensor.wan_download_gesamt_5_min`, `sensor.wan_upload_gesamt_5_min`. Verbrauchszähler „WAN Download/Upload Monat“ auf diese Quelle umgestellt | Monatszähler: ≈ 290 statt ≈ 43.000 Zeilen/Tag je Zähler; Übergang geprüft (Zähler +709,8 Mbit = Differenz der Summen, nichts verloren) |
+| R-08 (Teil) | `recorder.purge_entities` für die abgeschalteten Dream-Machine-Sensoren CPU und Speicher | Verlauf von ≈ 14 Tagen × 89.000 Zeilen gelöscht; Langzeitstatistik bleibt |
 | U-04 / F-14 | ApexCharts gestaffelt: 7–8 Tage → 30 min, 30–31 Tage → 1 h, 365 Tage → 6 h; 24-h-Diagramme unverändert (5 min bzw. 1 min) | 36 von 50 Diagrammen fragen seltener ab; Optik unverändert |
 
 ### Bewusst so gelassen / Hinweise
@@ -470,7 +472,7 @@ Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler,
 
 | Phase | Was | braucht |
 |---|---|---|
-| 2 | Recorder-Block (Anhang B), `ip_ban` (F-12), gedrosselte WAN-Sensoren (Anhang C), Zähler umstellen, Purge + Repack | YAML-Zugriff |
+| 2 | Recorder-Block (Anhang B) mit Ausschluss von `port_9_rx/tx` und `wan_*_gesamt` (≈ 224.000 Zeilen/Tag), `ip_ban` (F-12), danach Purge + Repack | YAML-Zugriff (die YAML-/Datei-Werkzeuge kommen trotz Freigabe noch nicht beim Client an) |
 | 5 | Pakete (`packages/`), Regenvorschau modernisieren, Verleih bündeln, Labels | YAML-Zugriff |
 | 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen (F-14, Pop-ups bleiben) | Dateizugriff |
 
