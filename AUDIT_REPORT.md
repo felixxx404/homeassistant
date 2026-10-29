@@ -456,7 +456,8 @@ automatische Konfigurationsprüfung.
 | U-03 | 28 von 29 Inline-Ressourcen als Dateien nach `/config/www/gg/` (byte-genau, per Prüfsumme gegen die Inline-Fassung geprüft) und die Ressourcen an Ort und Stelle auf `/local/gg/<datei>?v=<n>` umgestellt (Ladereihenfolge unverändert). Quelltext ohne Bilder im Repository unter `dashboard/gg/` | Browser-Cache und gzip greifen; Nest Hub nach Neustart der Ansicht ohne Frontend-Fehler. **`gg-qr` bleibt bewusst inline**: `/local/` ist ohne Anmeldung lesbar, der QR-Code enthält das WLAN-Passwort |
 | U-02 | Hintergrundbild des Haupt-Dashboards (WebP, zweimal je 65 KB Base64 in der Konfiguration) als `/config/www/gg/hintergrund.webp` abgelegt, `background` zeigt darauf | Dashboard-Konfiguration 995 KB → 866 KB, Optik unverändert. Die Pop-ups bleiben in der Ansicht (F-14) |
 | A-11 | `gg_diag` entfernt: in `gg-fenster` v5 ist `diag()` leer, der Lade-Aufruf entfällt; Helfer `input_text.gg_diag` gelöscht | kein Dienstaufruf und keine Recorder-Zeile mehr bei jedem Laden auf dem Nest Hub |
-| A-05 | AliExpress-Ressource erneut entfernt (war wieder registriert, keine Karte nutzt sie) | Hinweis: kommt sie nach einem HACS-Update zurück, das HACS-Repository der Karte entfernen |
+| A-05 | AliExpress-Ressource erneut entfernt (keine Karte nutzt sie) | **kommt bei jedem Neustart zurück**: die Integration `aliexpress_package_tracker` registriert ihre Karte selbst. Dauerhaft nur über deren Optionen (Karte nicht registrieren) oder durch Entfernen der Integration |
+| M-02 / M-03 | **YAML-Pakete aktiv** (`homeassistant: packages: !include_dir_named packages`, von dir eingetragen). Umgezogen: `recorder.yaml`, `wetter.yaml` (Regenvorschau), `drucker.yaml`, `klima.yaml` (thermal_comfort), `verleih.yaml` (6 Verleih-Helfer), `eufy.yaml` (Shell-Befehle, Altlast), `sprache.yaml` (google_assistant, Zugangsdatei per `!include ../SERVICE_ACCOUNT.json`). `configuration.yaml` enthält nur noch `homeassistant`, `default_config`, `frontend` und die drei UI-Includes | je Thema erst entfernt, dann ins Paket geschrieben (jeder Zwischenstand geprüft gültig), danach ein Neustart. Alle Entity-IDs gleich, Werte erhalten, keine Fehler, keine Reparaturhinweise; Recorder-Ausschlüsse greifen weiter |
 
 ### Bewusst so gelassen / Hinweise
 
@@ -500,27 +501,8 @@ automatische Konfigurationsprüfung.
 |---|---|---|
 | 2 | Ergebnis Repack (30.10. 04:00) nachtragen, Einmal-Automation löschen | erledige ich nach dem Lauf |
 | 2 | Z2M-Reporting des Kühlschrank-Steckers (R-06) | UI (Zigbee2MQTT) |
-| 5 | **YAML-Pakete (M-02) und Verleih bündeln (M-03)** | **ein Handgriff von dir**, siehe unten |
+| 6 | 2 neue Inline-Module `gg-service`, `gg-shisha` (29.10., andere Sitzung) bei Gelegenheit ebenfalls nach `/config/www/gg/` | Rücksprache |
 | 7 | Optional: Lichtfest aufteilen, Update-Skripte, `input_text`-Speicher, ZHA → Z2M | Rücksprache |
-
-**Warum die Pakete noch fehlen:** Eingeschaltet werden Pakete über den Schlüssel `homeassistant:` in
-`configuration.yaml`. Diesen Schlüssel darf das YAML-Werkzeug grundsätzlich nicht ändern (Schutzregel in ha-mcp,
-nicht abschaltbar). `thermal_comfort`, `input_select/_text/_datetime` (Verleih) und `google_assistant` sind
-zusätzlich nicht freigegeben. Erledigt ist dagegen alles, was ohne Pakete geht (Recorder, Regenvorschau, Drucker).
-
-**Damit ich die Pakete umsetzen kann:**
-
-1. Im File editor ganz oben in `configuration.yaml` einfügen und speichern (noch **nicht** neu starten):
-   ```yaml
-   homeassistant:
-     packages: !include_dir_named packages
-   ```
-2. In der Web-Oberfläche der MCP-App unter *Server Settings* bei den zusätzlich schreibbaren YAML-Schlüsseln
-   `thermal_comfort`, `input_select`, `input_text`, `input_datetime` und `google_assistant` eintragen.
-
-Danach verschiebe ich `recorder`, `template` (Wetter, Drucker), `thermal_comfort`, die Verleih-Helfer,
-`shell_command` und `google_assistant` in je eine Datei unter `packages/` (Anhang D), prüfe die Konfiguration
-und starte neu. Entity-IDs bleiben gleich.
 
 ---
 
