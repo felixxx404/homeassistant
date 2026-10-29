@@ -408,5 +408,81 @@ Diagramme Werte zeigen.
 
 ---
 
-**Nächster Schritt:** Ich warte auf dein „Go“. Am einfachsten je Phase (z. B. „Go Phase 1“) oder je ID
+## 7. Umsetzungsstand (29.10.2026, nach Freigabe F-01 … F-14)
+
+Alle Änderungen liefen über die HA-API (ha-mcp), mit Objekt-Sicherung je Automation/Skript/Dashboard.
+Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler, wo möglich ein Testlauf mit Trace).
+
+### Erledigt
+
+| ID | Was | Ergebnis |
+|---|---|---|
+| F-03 | HACS: `ha_mcp_tools` installiert, DPD entfernt, Neustart | Datei-/YAML-Zugriff fehlt noch → **zwei UI-Schritte durch dich**, siehe unten |
+| P-04 / F-13 | UniFi: „Clients verfolgen“ und „kabelgebundene Clients“ aus | 78 Tracker weniger |
+| R-01, P-05, A-08, A-09 | deaktiviert: CPU/RAM UDM + U7 Pro, 3× UDM-Auflösung, `re_fl20_end_of_charge`, 16 Client-rx/tx, 51 PoE-Port-Buttons, 4 Klingel-Zahlen | deutlich weniger Recorder-Zeilen |
+| P-01 | Kohlegrill-Wächter: Bedingung „Steckdose an“ oben | ≈ 1.440 leere Läufe/Tag weniger |
+| P-02 | KI-Steuerung, Raumfühler-Regelung, Strommesser-Wächter: Takt-Auslöser nur, wenn ein Zweig greifen kann | ≈ 530 leere Läufe/Tag weniger |
+| T-04 / F-09a | Batterie-Warnung: Template-Trigger über alle Sensoren entfernt, stündlicher Lauf bleibt | ≈ 86.000 Renderings/Tag weniger |
+| T-08 / F-09b | CO₂-Warnung: Timeout 6 h; danach Lampe ohne Grün-Signal zurück, Automation wieder frei | kein hängender Lauf mehr |
+| K-01 | Nest Hubs: „Dashboard anzeigen“ und „Design nachladen“ je zu **einer** Automation (Trigger-IDs, `for_each`) | 4 → 2 Automationen |
+| K-02 | Klima-Menüs: zwei Schließ-Automationen zu einer (`trigger.entity_id`) | 2 → 1 |
+| K-04 / T-11 | Wetter: ein stündlicher Abruf füllt 12-h-Tief/Hoch **und** UV-Vorschau; `uv_vorschau_aktualisieren` gelöscht | 1 statt 2 Abrufe/Stunde, Werte geprüft |
+| T-12 / F-10 | Kohlegrill „Kohlen bereit“: Hue-Effekt „Atmen“ (`flash: long`) alle 15 s statt Dimm-Schleife | ≈ 80 statt bis zu 1.700 Lichtbefehle |
+| T-07 | Timer-Trigger zweckgebunden (`timer.finished` mit `target`): Kohlegrill, Klima-Tipp, Stoßlüften | – |
+| T-09 | Lüften erkennen (Gartenhaus, Schlafzimmer): Zustands-Trigger + Bedingungen statt Template mit `now()` | keine minütliche Auswertung mehr, gleiches Verhalten |
+| T-06 | Hue-Wandschalter „Alles aus“: `event.received` mit `long_press` statt Zustands-Trigger + Template | – |
+| A-13 / F-07 | KI-Heizung: Strategien Intervall/Wärmepuffer entfernt (Steuerung + Nachtanalyse), `input_number.ki_pufferziel` gelöscht | Wissen gesichert in `docs/ki_heizung_wissen.md` |
+| F-06 | Nachtanalyse: KI-Texte max. 120 Zeichen, ein klarer Satz | – |
+| T-02 | Mercedes-Template-Helfer: `none` statt Text `'unknown'` | Werte geprüft |
+| A-05 / U-06 | AliExpress-Ressource entfernt | – |
+| A-10 … A-12 | gelöscht: `script.kamera_snooze_wahlen`, 2 Klingel-Spannungssensoren, `input_select.nest_gartenhaus_ansicht` | – |
+| – | Nest Schlafzimmer: Wecker-Karte zeigt „Weckzeit wird geladen …“ statt Fehler | – |
+| F-11 | Dyson: Verbindung „Cloud mit lokalem Fallback“ (lokal war aus dem IoT-VLAN nie erreichbar) | kein 10-s-Timeout beim Start; Werte kommen |
+| F-05 | Drucker behalten. Neue Sensoren `sensor.drucker_toner_{schwarz,cyan,magenta,gelb}` (letzter bekannter Wert) und `sensor.drucker_status` („Aus“ statt „nicht verfügbar“); Dashboard-Kachel umgestellt | siehe Hinweis unten |
+| F-02 | Wecker-Ersatzansage: Google-Übersetzer-TTS statt Nabu-Casa-Cloud | läuft ohne Abo |
+
+### Bewusst so gelassen / Hinweise
+
+- **UniFi seltener aktualisieren:** geht nicht. Die Integration bekommt die Daten per Websocket-Push von der Dream Machine,
+  es gibt kein Abfrageintervall. Die Last wird stattdessen gesenkt durch: Entitäten deaktivieren (erledigt),
+  Client-Tracking aus (erledigt), Recorder-Excludes + gedrosselte WAN-Kopie alle 5 min (R-01/R-02, braucht YAML).
+- **T-07 KI-Steuerung:** nutzt noch die alte Ereignis-Form `timer.finished`/`timer.cancelled`. Funktioniert weiter;
+  wird beim nächsten Umbau der (sehr großen) Automation mit umgestellt.
+- **Drucker:** Die UI-Template-Sensoren behalten den letzten Wert, solange HA läuft. Nach einem HA-Neustart sind sie
+  bis zum nächsten Einschalten des Druckers leer. Mit YAML-Zugriff werden sie zu Trigger-Template-Sensoren
+  (stellen ihren Wert nach Neustart wieder her). **Fernstart:** Die IPP-Schnittstelle kann den Drucker nicht einschalten.
+  Möglich ist das nur mit einem schaltbaren Zwischenstecker (z. B. Zigbee-Steckdose) **und** wenn der Drucker nach
+  Stromzufuhr selbst startet (Canon: Einstellung „Automatisch einschalten“ prüfen); Wake-on-LAN weckt ihn nur aus dem
+  Ruhezustand, nicht aus „aus“.
+- **ZHA (F-08):** bleibt. Alternativen, falls gewünscht: (a) netzwerkfähiger Koordinator (Ethernet, z. B. SLZB-06) im
+  Gartenhaus für Zigbee2MQTT, dann ein Netz über LAN statt zweiter USB-Stick; (b) Zigbee-Router als Brücke zwischen
+  den Gebäuden, falls die Entfernung das hergibt. Eine zweite Z2M-Instanz bringt gegenüber ZHA keinen Vorteil.
+- **Eufy (F-04):** Integration bleibt entfernt/deaktiviert, die Kamera-Timer und Dashboard-Blöcke bleiben vorerst stehen
+  (A-01 … A-03 zurückgestellt). Empfehlung für den Wiedereinstieg: `eufy_security` + Add-on `eufy-security-ws`,
+  **ohne** Dauer-Stream und ohne periodische Snapshots; Bilder nur bei Ereignis (Bewegung/Klingel), Livebild nur auf Tipp.
+  Das ist der akkuschonende Betrieb.
+- **Cloud-Ersatz (F-02):** Google Assistant läuft über Nabu Casa. Ersatz ohne Abo: manuelle `google_assistant`-Einrichtung
+  (Google-Cloud-Projekt + Actions-Projekt, braucht von außen erreichbare HTTPS-Adresse) oder Sprachsteuerung über
+  Assist auf dem Handy. Fernzugriff bleibt über Tailscale möglich.
+
+### Noch offen
+
+| Phase | Was | braucht |
+|---|---|---|
+| 2 | Recorder-Block (Anhang B), `ip_ban` (F-12), gedrosselte WAN-Sensoren (Anhang C), Zähler umstellen, Purge + Repack | YAML-Zugriff |
+| 5 | Pakete (`packages/`), Regenvorschau modernisieren, Verleih bündeln, Labels | YAML-Zugriff |
+| 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen, ApexCharts-Intervalle staffeln (F-14, Pop-ups bleiben) | Dateizugriff |
+
+**Damit es weitergeht – zwei Schritte in der HA-Oberfläche:**
+
+1. *Einstellungen → Geräte & Dienste → Integration hinzufügen →* „HA-MCP Custom Component“ → Eintrag
+   „HA-MCP File & YAML Tools“ anlegen.
+2. In der Web-Oberfläche der MCP-App unter *Server Settings* „Enable beta features“ sowie die Schalter für
+   YAML- und Dateisystem-Zugriff einschalten, App neu starten.
+
+Danach lese ich `configuration.yaml` und setze Phase 2 (Recorder) um.
+
+---
+
+_Ursprünglicher Abschluss des Dry-Run-Berichts:_ **Nächster Schritt:** Ich warte auf dein „Go“. Am einfachsten je Phase (z. B. „Go Phase 1“) oder je ID
 (z. B. „Go R-01, P-01, T-02“), dazu die Antworten auf F-01 bis F-14, soweit sie die freigegebenen Schritte betreffen.
