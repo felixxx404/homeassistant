@@ -412,12 +412,14 @@ Diagramme Werte zeigen.
 
 Alle Änderungen liefen über die HA-API (ha-mcp), mit Objekt-Sicherung je Automation/Skript/Dashboard.
 Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler, wo möglich ein Testlauf mit Trace).
+YAML-Änderungen (ab Phase 2) liefen über die verwaltete YAML-Bearbeitung von ha-mcp: Vorschau-Diff, Bestätigung,
+automatische Konfigurationsprüfung.
 
 ### Erledigt
 
 | ID | Was | Ergebnis |
 |---|---|---|
-| F-03 | HACS: `ha_mcp_tools` installiert, DPD entfernt, Neustart | Datei-/YAML-Zugriff fehlt noch → **zwei UI-Schritte durch dich**, siehe unten |
+| F-03 | HACS: `ha_mcp_tools` installiert, DPD entfernt, Neustart; Eintrag „HA-MCP File & YAML Tools“ und YAML-/Dateizugriff in der MCP-App eingeschaltet | YAML lesen/schreiben funktioniert |
 | P-04 / F-13 | UniFi: „Clients verfolgen“ und „kabelgebundene Clients“ aus | 78 Tracker weniger |
 | R-01, P-05, A-08, A-09 | deaktiviert: CPU/RAM UDM + U7 Pro, 3× UDM-Auflösung, `re_fl20_end_of_charge`, 16 Client-rx/tx, 51 PoE-Port-Buttons, 4 Klingel-Zahlen | deutlich weniger Recorder-Zeilen |
 | P-01 | Kohlegrill-Wächter: Bedingung „Steckdose an“ oben | ≈ 1.440 leere Läufe/Tag weniger |
@@ -443,17 +445,22 @@ Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler,
 | R-02 (Teil, ohne YAML) | Gedrosselte Kopien als UI-Filter-Helfer (`time_throttle`, 5 min): `sensor.wan_download_gesamt_5_min`, `sensor.wan_upload_gesamt_5_min`. Verbrauchszähler „WAN Download/Upload Monat“ auf diese Quelle umgestellt | Monatszähler: ≈ 290 statt ≈ 43.000 Zeilen/Tag je Zähler; Übergang geprüft (Zähler +709,8 Mbit = Differenz der Summen, nichts verloren) |
 | R-08 (Teil) | `recorder.purge_entities` für die abgeschalteten Dream-Machine-Sensoren CPU und Speicher | Verlauf von ≈ 14 Tagen × 89.000 Zeilen gelöscht; Langzeitstatistik bleibt |
 | U-04 / F-14 | ApexCharts gestaffelt: 7–8 Tage → 30 min, 30–31 Tage → 1 h, 365 Tage → 6 h; 24-h-Diagramme unverändert (5 min bzw. 1 min) | 36 von 50 Diagrammen fragen seltener ab; Optik unverändert |
+| R-02 (Rest) | 24-h-Durchsatzdiagramm (Haupt-Dashboard, Netzwerk-Pop-up): statt 5-min-Mittelwert von `port_9_rx/tx` jetzt 5-min-Änderung der Filter-Helfer `sensor.wan_{download,upload}_gesamt_5_min` ÷ 300 s (`statistics: {type: change, period: 5minute}`, `transform: "return x / 300;"`). Farben, Titel, Achsen unverändert | Gegenprobe vorher: gleiche Werte (z. B. 3,78 ↔ 3,77 Mbit/s, 0,59 ↔ 0,58). Die Filter-Statistik beginnt am 29.10. ca. 13:05, ab dem 30.10. mittags sind die vollen 24 h gefüllt |
+| R-03 … R-05, R-07 | `recorder:` in `configuration.yaml`: `purge_keep_days: 10`, `commit_interval: 30`, `auto_purge`/`auto_repack` an. Ausgeschlossen: Ereignis `call_service`; `sun.sun`, `port_9_rx/tx`, `wan_{download,upload}_gesamt`, Kühlschrank-Spannung/-Wirkstrom, `sensor.klima_empfehlung*`, 2 UI-Zustands-Booleans, `input_text.ki_messpunkt`, 12 `device_tracker` (2 Handys, 10 UniFi-Geräte); Globs `*_betriebszeit*`, `*_uplink_mac`, `*_ip_adresse`, `*_wifi_signal`, `*_voltage`, `sun_next_*` (36 Sensoren) | nach Neustart geprüft: keine neuen Zeilen mehr für die Ausschlüsse, Filter-Helfer und Monatszähler werden weiter aufgezeichnet. **Positionshistorie des Autos (`device_tracker` Mercedes) bleibt** auf Wunsch erhalten, deshalb einzelne Tracker statt der ganzen Domäne |
+| R-08 (Teil) | `recorder.purge_entities` (`keep_days: 0`) für alle Ausschlüsse | läuft im Recorder in Teilschritten (älteste Daten zuerst): Klima-Empfehlung und Tracker sofort leer, Port-9-Verlauf beim Abschluss des Berichts bis 22.10. abgebaut. Langzeitstatistik bleibt (geprüft an `port_9_rx`), Auto-Position bleibt. Datei bleibt bis zum Repack ≈ 1 GB groß |
+| F-12 | Login-Schutz: `login_attempts_threshold: 5` (`ip_ban_enabled` war schon an). Seit HA 2026.8 liegt `http` nicht mehr in YAML, sondern unter *Einstellungen → System → Netzwerk*; gesetzt über diese Einstellung, HA startet dafür selbst neu und übernimmt die Werte erst nach Bestätigung | aktiv. Entsperren: Eintrag in `ip_bans.yaml` (File editor) löschen, dann Neustart, von einem nicht gesperrten Gerät/Netz aus |
+| F-05 (Rest) | Drucker: `sensor.drucker_toner_{schwarz,cyan,magenta,gelb}` und `sensor.drucker_status` als **Trigger-Template-Sensoren** in `configuration.yaml` (gleiche Templates, Icons, Einheiten, Entity-IDs; Sprachfreigabe aus wie vorher). Die 5 UI-Template-Helfer gelöscht | Toner: Wert übersteht jetzt Neustarts. Status: Start-Trigger setzt nach Neustart sofort „Aus“, falls der Drucker nicht erreichbar ist. Kachel „Toner Schwarz“ unverändert gültig |
 
 ### Bewusst so gelassen / Hinweise
 
 - **UniFi seltener aktualisieren:** geht nicht. Die Integration bekommt die Daten per Websocket-Push von der Dream Machine,
   es gibt kein Abfrageintervall. Die Last wird stattdessen gesenkt durch: Entitäten deaktivieren (erledigt),
-  Client-Tracking aus (erledigt), Recorder-Excludes + gedrosselte WAN-Kopie alle 5 min (R-01/R-02, braucht YAML).
+  Client-Tracking aus (erledigt), Recorder-Excludes + gedrosselte WAN-Kopie alle 5 min (R-01/R-02, erledigt).
 - **T-07 KI-Steuerung:** nutzt noch die alte Ereignis-Form `timer.finished`/`timer.cancelled`. Funktioniert weiter;
   wird beim nächsten Umbau der (sehr großen) Automation mit umgestellt.
-- **Drucker:** Die UI-Template-Sensoren behalten den letzten Wert, solange HA läuft. Nach einem HA-Neustart sind sie
-  bis zum nächsten Einschalten des Druckers leer. Mit YAML-Zugriff werden sie zu Trigger-Template-Sensoren
-  (stellen ihren Wert nach Neustart wieder her). **Fernstart:** Die IPP-Schnittstelle kann den Drucker nicht einschalten.
+- **Drucker:** Seit Phase 2 Trigger-Template-Sensoren, der letzte Tonerstand übersteht Neustarts. Zum Zeitpunkt der
+  Umstellung waren die Werte leer (Drucker aus seit dem letzten Neustart); sie füllen sich beim nächsten Einschalten.
+  **Fernstart:** Die IPP-Schnittstelle kann den Drucker nicht einschalten.
   Möglich ist das nur mit einem schaltbaren Zwischenstecker (z. B. Zigbee-Steckdose) **und** wenn der Drucker nach
   Stromzufuhr selbst startet (Canon: Einstellung „Automatisch einschalten“ prüfen); Wake-on-LAN weckt ihn nur aus dem
   Ruhezustand, nicht aus „aus“.
@@ -467,23 +474,25 @@ Jede geänderte Automation wurde danach geprüft (Zustand `on`, kein Log-Fehler,
 - **Cloud-Ersatz (F-02):** Google Assistant läuft über Nabu Casa. Ersatz ohne Abo: manuelle `google_assistant`-Einrichtung
   (Google-Cloud-Projekt + Actions-Projekt, braucht von außen erreichbare HTTPS-Adresse) oder Sprachsteuerung über
   Assist auf dem Handy. Fernzugriff bleibt über Tailscale möglich.
+- **Statistik-Hinweise:** Unter *Entwicklerwerkzeuge → Statistik* erscheinen für ausgeschlossene Messwert-Sensoren
+  (z. B. `port_9_rx/tx`, Kühlschrank-Spannung, Zigbee-Spannungen) Hinweise „wird nicht mehr aufgezeichnet“. Die alte
+  Langzeitstatistik bleibt; die Hinweise können ignoriert oder dort einzeln bereinigt werden.
+- **Riemann-Summe nach Neustart:** `wan_*_gesamt` startet nach einem HA-Neustart mit einem um einige 100 Mbit
+  niedrigeren Wert als kurz vor dem Neustart (beobachtet am 29.10. zweimal, auch vor dem Recorder-Ausschluss). Der
+  Monatszähler bleibt korrekt, weil die 5-min-Kopie den Rücksprung meist nicht sieht; im 24-h-Diagramm kann ein
+  einzelner 5-min-Wert nach einem Neustart zu niedrig sein. Kein Handlungsbedarf.
+- **Drucker-Umstellung:** Die neue `http`-Einstellung hat einen Neustart ausgelöst, bevor die UI-Helfer gelöscht waren.
+  Die YAML-Sensoren kamen deshalb zuerst als `…_2`; nach dem Löschen der UI-Helfer auf die alten IDs umbenannt. Der
+  Verlauf der alten IDs läuft weiter, nur die rund 4 Minuten unter `…_2` sind verwaist.
 
 ### Noch offen
 
 | Phase | Was | braucht |
 |---|---|---|
-| 2 | Recorder-Block (Anhang B) mit Ausschluss von `port_9_rx/tx` und `wan_*_gesamt` (≈ 224.000 Zeilen/Tag), `ip_ban` (F-12), danach Purge + Repack | YAML-Zugriff (die YAML-/Datei-Werkzeuge kommen trotz Freigabe noch nicht beim Client an) |
-| 5 | Pakete (`packages/`), Regenvorschau modernisieren, Verleih bündeln, Labels | YAML-Zugriff |
-| 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen (F-14, Pop-ups bleiben) | Dateizugriff |
-
-**Damit es weitergeht – zwei Schritte in der HA-Oberfläche:**
-
-1. *Einstellungen → Geräte & Dienste → Integration hinzufügen →* „HA-MCP Custom Component“ → Eintrag
-   „HA-MCP File & YAML Tools“ anlegen.
-2. In der Web-Oberfläche der MCP-App unter *Server Settings* „Enable beta features“ sowie die Schalter für
-   YAML- und Dateisystem-Zugriff einschalten, App neu starten.
-
-Danach lese ich `configuration.yaml` und setze Phase 2 (Recorder) um.
+| 2 | `recorder.purge` mit `repack: true` (gibt den Platz in der Datei frei, ≈ 1 GB → erwartet 100–150 MB) | Rücksprache, nachts ausführen (HA ist währenddessen zäh) |
+| 2 | Z2M-Reporting des Kühlschrank-Steckers (R-06) | UI (Zigbee2MQTT) |
+| 5 | Pakete (`packages/`), Regenvorschau modernisieren, Verleih bündeln, Labels | Rücksprache |
+| 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen (F-14, Pop-ups und Optik bleiben) | Rücksprache |
 
 ---
 
