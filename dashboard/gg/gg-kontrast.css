@@ -1,0 +1,48 @@
+/* gg-kontrast v1 (26.10.2026) – Barrierefreiheit nach Apple HIG (Accessibility, Materials), lädt NACH gg-farben/gg-bild/gg-glas und überschreibt nur Variablen:
+   Tag: Sekundärtexte ≥ 4,5:1 auf der Kachel (vorher ca. 2–3:1), Kachel deckender (weiß 0,70); Nacht: Tertiärtexte angehoben.
+   Respektiert „Transparenz reduzieren“ und „Kontrast erhöhen“ des Geräts. Entfernen = alter Stand. */
+:root {
+  --gg-l42: rgba(235, 235, 245, 0.6);
+  --gg-l45: rgba(235, 235, 245, 0.6);
+  --gg-l50: rgba(235, 235, 245, 0.6);
+  --gg-l52: rgba(235, 235, 245, 0.6);
+  --gg-l55: rgba(235, 235, 245, 0.6);
+  --gg-wert: rgba(235, 235, 245, 0.64);
+}
+:root[data-gg-tag] {
+  --gg-achse: rgba(60, 60, 67, 0.76);
+  --gg-l42: rgba(60, 60, 67, 0.76);
+  --gg-l45: rgba(60, 60, 67, 0.76);
+  --gg-l50: rgba(60, 60, 67, 0.76);
+  --gg-l52: rgba(60, 60, 67, 0.76);
+  --gg-l55: rgba(60, 60, 67, 0.76);
+  --gg-l60: rgba(60, 60, 67, 0.76);
+  --gg-l62: rgba(60, 60, 67, 0.76);
+  --gg-l65: rgba(60, 60, 67, 0.76);
+  --gg-l68: rgba(60, 60, 67, 0.76);
+  --gg-l70: rgba(60, 60, 67, 0.76);
+  --gg-l72: rgba(60, 60, 67, 0.76);
+  --gg-l74: rgba(60, 60, 67, 0.76);
+  --gg-l75: rgba(60, 60, 67, 0.76);
+  --gg-l78: rgba(60, 60, 67, 0.76);
+  --gg-l80: rgba(60, 60, 67, 0.76);
+  --gg-l84: rgba(60, 60, 67, 0.84);
+  --gg-l85: rgba(60, 60, 67, 0.84);
+  --gg-l88: rgba(60, 60, 67, 0.84);
+  --gg-l90: rgba(60, 60, 67, 0.84);
+  --gg-w80: rgba(60, 60, 67, 0.76);
+  --gg-w85: rgba(60, 60, 67, 0.84);
+  --gg-w90: rgba(60, 60, 67, 0.84);
+  --gg-wert: rgba(60, 60, 67, 0.76);
+  --gg-kachel: rgba(255, 255, 255, 0.7);
+  --gg-licht-basis: rgba(255, 255, 255, 0.82);
+}
+/* Systemeinstellungen respektieren (HIG Accessibility): Transparenz reduzieren → deckende Flächen ohne Blur; Kontrast erhöhen → kräftigere Ränder/Texte */
+@media (prefers-reduced-transparency: reduce) {
+  :root { --gg-kachel: rgba(44, 44, 50, 0.96); --gg-frost: none; --gg-blatt: rgba(30, 30, 36, 0.98); --gg-leiste: rgba(44, 44, 50, 0.96); --gg-licht-basis: rgba(44, 44, 50, 0.96); }
+  :root[data-gg-tag] { --gg-kachel: #FFFFFF; --gg-blatt: rgba(246, 246, 250, 0.99); --gg-leiste: rgba(255, 255, 255, 0.97); --gg-licht-basis: #FFFFFF; }
+}
+@media (prefers-contrast: more) {
+  :root { --gg-l62: rgba(235, 235, 245, 0.8); --gg-l68: rgba(235, 235, 245, 0.84); --gg-l74: rgba(235, 235, 245, 0.88); --gg-l78: rgba(235, 235, 245, 0.9); --gg-l80: rgba(235, 235, 245, 0.92); --gg-wert: rgba(235, 235, 245, 0.8); --gg-kachel: rgba(44, 44, 50, 0.9); }
+  :root[data-gg-tag] { --gg-l62: rgba(60, 60, 67, 0.84); --gg-l68: rgba(60, 60, 67, 0.86); --gg-l74: rgba(60, 60, 67, 0.88); --gg-l78: rgba(60, 60, 67, 0.9); --gg-l80: rgba(60, 60, 67, 0.92); --gg-wert: rgba(60, 60, 67, 0.88); --gg-kachel: rgba(255, 255, 255, 0.92); }
+}

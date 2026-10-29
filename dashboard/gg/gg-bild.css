@@ -1,0 +1,17 @@
+/* gg-bild v2 – Hintergrundbild (Tag hell, Nacht abgedunkelt), Überschriften auf dem Hintergrund, hellgraue Werte */
+:root {
+  --gg-bild: url("data:image/webp;base64,BILD_NICHT_IM_REPOSITORY");
+  --gg-wand: linear-gradient(rgba(12, 12, 16, 0.7), rgba(12, 12, 16, 0.78)), var(--gg-bild) center / cover no-repeat, #141416;
+  --gg-ueber: #FFFFFF;
+  --gg-ueber2: rgba(255, 255, 255, 0.85);
+  --gg-ueberschatten: none;
+  --gg-wert: rgba(235, 235, 245, 0.55);
+}
+:root[data-gg-tag] {
+  --gg-wand: var(--gg-bild) center / cover no-repeat, #E6E7EC;
+  --gg-wand-farbe: #E6E7EC;
+  --gg-ueber: #FFFFFF;
+  --gg-ueber2: rgba(255, 255, 255, 0.94);
+  --gg-ueberschatten: none;
+  --gg-wert: rgba(60, 60, 67, 0.42);
+}

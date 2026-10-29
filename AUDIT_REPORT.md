@@ -450,6 +450,13 @@ automatische Konfigurationsprüfung.
 | R-08 (Teil) | `recorder.purge_entities` (`keep_days: 0`) für alle Ausschlüsse | läuft im Recorder in Teilschritten (älteste Daten zuerst): Klima-Empfehlung und Tracker sofort leer, Port-9-Verlauf beim Abschluss des Berichts bis 22.10. abgebaut. Langzeitstatistik bleibt (geprüft an `port_9_rx`), Auto-Position bleibt. Datei bleibt bis zum Repack ≈ 1 GB groß |
 | F-12 | Login-Schutz: `login_attempts_threshold: 5` (`ip_ban_enabled` war schon an). Seit HA 2026.8 liegt `http` nicht mehr in YAML, sondern unter *Einstellungen → System → Netzwerk*; gesetzt über diese Einstellung, HA startet dafür selbst neu und übernimmt die Werte erst nach Bestätigung | aktiv. Entsperren: Eintrag in `ip_bans.yaml` (File editor) löschen, dann Neustart, von einem nicht gesperrten Gerät/Netz aus |
 | F-05 (Rest) | Drucker: `sensor.drucker_toner_{schwarz,cyan,magenta,gelb}` und `sensor.drucker_status` als **Trigger-Template-Sensoren** in `configuration.yaml` (gleiche Templates, Icons, Einheiten, Entity-IDs; Sprachfreigabe aus wie vorher). Die 5 UI-Template-Helfer gelöscht | Toner: Wert übersteht jetzt Neustarts. Status: Start-Trigger setzt nach Neustart sofort „Aus“, falls der Drucker nicht erreichbar ist. Kachel „Toner Schwarz“ unverändert gültig |
+| R-08 (Rest) | Repack (`recorder.purge` mit `repack: true`) eingeplant: Einmal-Automation „Einmalig: Datenbank verkleinern (Repack)“ läuft am 30.10. um 04:00 und schaltet sich danach selbst ab; Kontrolle um 05:00 (DB-Größe, Log), danach wird die Automation gelöscht | Ergebnis wird hier nachgetragen |
+| T-01 | Regenvorschau: moderne Schreibweise (`triggers`/`actions`/`trigger:`), `unique_id`, gleiche Entity-ID `sensor.regenvorschau_recklinghausen`, kürzeres Template. Vorher gegen das alte Template getestet (echte Vorhersage + 3 konstruierte Fälle: Menge, Wahrscheinlichkeit, kein Regen) | identischer Text, Dashboard-Kachel unverändert; jetzt im UI verwaltbar (Name, Bereich, Labels) |
+| M-04 | 11 Labels angelegt und rund 210 Automationen, Skripte und Helfer zugeordnet: Klima & KI, Mercedes, Kohlegrill, Wecker, Lichtfest, Push, System, Dashboard-UI, Verleih & Guthaben, Licht & Geräte, Kamera (Altlast) | Filter in Einstellungen → Automationen/Skripte/Helfer; keine Entity-ID geändert |
+| U-03 | 28 von 29 Inline-Ressourcen als Dateien nach `/config/www/gg/` (byte-genau, per Prüfsumme gegen die Inline-Fassung geprüft) und die Ressourcen an Ort und Stelle auf `/local/gg/<datei>?v=<n>` umgestellt (Ladereihenfolge unverändert). Quelltext ohne Bilder im Repository unter `dashboard/gg/` | Browser-Cache und gzip greifen; Nest Hub nach Neustart der Ansicht ohne Frontend-Fehler. **`gg-qr` bleibt bewusst inline**: `/local/` ist ohne Anmeldung lesbar, der QR-Code enthält das WLAN-Passwort |
+| U-02 | Hintergrundbild des Haupt-Dashboards (WebP, zweimal je 65 KB Base64 in der Konfiguration) als `/config/www/gg/hintergrund.webp` abgelegt, `background` zeigt darauf | Dashboard-Konfiguration 995 KB → 866 KB, Optik unverändert. Die Pop-ups bleiben in der Ansicht (F-14) |
+| A-11 | `gg_diag` entfernt: in `gg-fenster` v5 ist `diag()` leer, der Lade-Aufruf entfällt; Helfer `input_text.gg_diag` gelöscht | kein Dienstaufruf und keine Recorder-Zeile mehr bei jedem Laden auf dem Nest Hub |
+| A-05 | AliExpress-Ressource erneut entfernt (war wieder registriert, keine Karte nutzt sie) | Hinweis: kommt sie nach einem HACS-Update zurück, das HACS-Repository der Karte entfernen |
 
 ### Bewusst so gelassen / Hinweise
 
@@ -481,6 +488,8 @@ automatische Konfigurationsprüfung.
   niedrigeren Wert als kurz vor dem Neustart (beobachtet am 29.10. zweimal, auch vor dem Recorder-Ausschluss). Der
   Monatszähler bleibt korrekt, weil die 5-min-Kopie den Rücksprung meist nicht sieht; im 24-h-Diagramm kann ein
   einzelner 5-min-Wert nach einem Neustart zu niedrig sein. Kein Handlungsbedarf.
+- **Ressourcen ändern (ab jetzt):** Datei in `/config/www/gg/` ersetzen und in der Ressource `?v=` hochzählen,
+  sonst zeigt der Browser die alte Fassung. Quelle für Vergleiche: `dashboard/gg/` in diesem Repository.
 - **Drucker-Umstellung:** Die neue `http`-Einstellung hat einen Neustart ausgelöst, bevor die UI-Helfer gelöscht waren.
   Die YAML-Sensoren kamen deshalb zuerst als `…_2`; nach dem Löschen der UI-Helfer auf die alten IDs umbenannt. Der
   Verlauf der alten IDs läuft weiter, nur die rund 4 Minuten unter `…_2` sind verwaist.
@@ -489,10 +498,29 @@ automatische Konfigurationsprüfung.
 
 | Phase | Was | braucht |
 |---|---|---|
-| 2 | `recorder.purge` mit `repack: true` (gibt den Platz in der Datei frei, ≈ 1 GB → erwartet 100–150 MB) | Rücksprache, nachts ausführen (HA ist währenddessen zäh) |
+| 2 | Ergebnis Repack (30.10. 04:00) nachtragen, Einmal-Automation löschen | erledige ich nach dem Lauf |
 | 2 | Z2M-Reporting des Kühlschrank-Steckers (R-06) | UI (Zigbee2MQTT) |
-| 5 | Pakete (`packages/`), Regenvorschau modernisieren, Verleih bündeln, Labels | Rücksprache |
-| 6 | Ressourcen/Bilder nach `/config/www/gg/`, `gg_diag` entfernen (F-14, Pop-ups und Optik bleiben) | Rücksprache |
+| 5 | **YAML-Pakete (M-02) und Verleih bündeln (M-03)** | **ein Handgriff von dir**, siehe unten |
+| 7 | Optional: Lichtfest aufteilen, Update-Skripte, `input_text`-Speicher, ZHA → Z2M | Rücksprache |
+
+**Warum die Pakete noch fehlen:** Eingeschaltet werden Pakete über den Schlüssel `homeassistant:` in
+`configuration.yaml`. Diesen Schlüssel darf das YAML-Werkzeug grundsätzlich nicht ändern (Schutzregel in ha-mcp,
+nicht abschaltbar). `thermal_comfort`, `input_select/_text/_datetime` (Verleih) und `google_assistant` sind
+zusätzlich nicht freigegeben. Erledigt ist dagegen alles, was ohne Pakete geht (Recorder, Regenvorschau, Drucker).
+
+**Damit ich die Pakete umsetzen kann:**
+
+1. Im File editor ganz oben in `configuration.yaml` einfügen und speichern (noch **nicht** neu starten):
+   ```yaml
+   homeassistant:
+     packages: !include_dir_named packages
+   ```
+2. In der Web-Oberfläche der MCP-App unter *Server Settings* bei den zusätzlich schreibbaren YAML-Schlüsseln
+   `thermal_comfort`, `input_select`, `input_text`, `input_datetime` und `google_assistant` eintragen.
+
+Danach verschiebe ich `recorder`, `template` (Wetter, Drucker), `thermal_comfort`, die Verleih-Helfer,
+`shell_command` und `google_assistant` in je eine Datei unter `packages/` (Anhang D), prüfe die Konfiguration
+und starte neu. Entity-IDs bleiben gleich.
 
 ---
 

@@ -1,0 +1,13 @@
+/* gg-glas: Abdunklung des Hintergrundbilds (Nacht) + Milchglas für Kacheln, Tab-Leiste und Pop-up-Blätter.
+   Nest: --gg-nestfrost = vorgeweichtes Hintergrundbild (fest ausgerichtet) statt backdrop-filter – gleiche Optik, kaum Rechenlast. */
+:root {
+  --gg-abdunkeln: rgba(12, 12, 16, 0.5); --gg-kachel: rgba(58, 58, 66, 0.42); --gg-frost: blur(24px) saturate(170%); --gg-blatt: rgba(30, 30, 36, 0.5);
+  --gg-bild-weich: url("data:image/webp;base64,BILD_NICHT_IM_REPOSITORY");
+  --gg-nestfrost: linear-gradient(rgba(150, 150, 166, 0.26), rgba(150, 150, 166, 0.26)), linear-gradient(rgba(12, 12, 16, 0.5), rgba(12, 12, 16, 0.58)) fixed, var(--gg-bild-weich) center / cover no-repeat fixed, #2C2C32;
+}
+:root[data-gg-tag] {
+  --gg-abdunkeln: rgba(0, 0, 0, 0); --gg-kachel: rgba(255, 255, 255, 0.4); --gg-frost: blur(28px) saturate(180%); --gg-leiste: rgba(255, 255, 255, 0.3); --gg-licht-basis: rgba(255, 255, 255, 0.64); --gg-blatt: rgba(246, 246, 250, 0.55);
+  --gg-nestfrost: linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42)), var(--gg-bild-weich) center / cover no-repeat fixed, #F2F2F6;
+}
+/* Der body-Hintergrund liegt über dem Ansichtshintergrund (z-index −1) und verdeckte das Bild im oberen Bildschirmbereich – nur html behält die Grundfarbe */
+body { background-color: transparent !important; }
